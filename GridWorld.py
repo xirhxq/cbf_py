@@ -36,11 +36,6 @@ class GridWorld:
         self.points = np.array(self.points)
         self.weights = np.array(self.weights)
 
-    def get_closest_density(self, point):
-        dists = np.sum((self.points - point) ** 2, axis=1)
-        closest_idx = np.argmin(dists)
-        return self.weights[closest_idx]
-
     def set_density_in_shape(self, shape, density):
         xmin, ymin, xmax, ymax = shape.bounds
         for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
@@ -58,16 +53,6 @@ class GridWorld:
                     self.weights[i] -= density
                     if self.weights[i] < 0:
                         self.weights[i] = 0
-
-    def get_total_density_in_shape(self, shape):
-        total_density = 0
-        xmin, ymin, xmax, ymax = shape.bounds
-        for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
-            for j in range(math.ceil(ymin / self.step), math.floor(ymax / self.step) + 1):
-                point = Point(i * self.step, j * self.step)
-                if shape.contains(point):
-                    total_density += self.weights[i]
-        return total_density
 
     def get_weighted_mean_point_in_shape(self, shape):
         total_weighted_sum = np.array([0, 0]).astype(float)
