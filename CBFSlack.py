@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class CBF:
+class CBFSlack:
     def __init__(self, name, h, alpha=lambda h: 0.1 * np.power(h, 3), delta=0.001):
         self.name = name
         self.delta = delta
@@ -28,7 +28,7 @@ class CBF:
 
     def constraint_const_with_time(self, f, g, x, t):
         # print('dhdt: ', self.dhdt(x, t))
-        # print('dhdx: ', self.dhdx(x, t).T)
+        # print('dhdx: ', self.dhdx(x, t).T)ao
         # print('f: ', f)
         # print('alpha: ', self.alpha(self.h(x, t)))
         return self.dhdt(x, t) + self.dhdx(x, t).T @ f + self.alpha(self.h(x, t))
