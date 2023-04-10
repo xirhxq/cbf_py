@@ -5,6 +5,7 @@ import gurobipy as gp
 from gurobipy import GRB
 
 import World
+import CBFMultiNoSlack
 
 
 class Robot:
@@ -20,7 +21,7 @@ class Robot:
         self.batt_ord = 2
         self.camera_ord = 3
         self.cbf_slack = {}
-        self.cbf_no_slack = {}
+        self.cbf_no_slack = CBFMultiNoSlack.CBFMultiNoSlack('Energy&Safe', {})
 
     def output_FGU(self):
         print(f'F{self.F.size}: ', self.F)
@@ -46,6 +47,9 @@ class Robot:
     def xy(self) -> Point:
         return Point(self.X[self.x_ord], self.X[self.y_ord])
 
+    def batt(self):
+        return float(self.X[self.batt_ord])
+
     def time_forward(self, runtime, dt, world: World):
         if world.is_charging(self.xy()) and self.X[self.batt_ord] < 100:
             self.X[self.batt_ord] += 10 * dt
@@ -65,12 +69,16 @@ class Robot:
 
             model.setObjective(sum([i * i for i in var_v]) + 0.1 * sum([i * i for i in var_slack]), gp.GRB.MINIMIZE)
 
-            for name, cbf in self.cbf_no_slack.items():
-                u_coe = cbf.constraint_u_coe(self.F, self.G, self.X, runtime)
-                constraint_const = cbf.constraint_const_with_time(self.F, self.G, self.X, runtime)
-                # print(f'cbf_{name}: ', u_coe, constraint_const)
-                # print(f'cbf_{name} expr: ', (u_coe.dot(var_v) + constraint_const)[0, 0])
-                model.addConstr((u_coe.dot(var_v) + constraint_const)[0, 0] >= 0, name=f'cbf_{name}')
+            u_coe = self.cbf_no_slack.constraint_u_coe(self.F, self.G, self.X, runtime)
+            constraint_const = self.cbf_no_slack.constraint_const_with_time(self.F, self.G, self.X, runtime)
+            # print(f'cbf_{name}: ', u_coe, constraint_const)
+            # print(f'cbf_{name} expr: ', (u_coe.dot(var_v) + constraint_const)[0, 0])
+            lhs = u_coe.dot(var_v) + constraint_const
+
+            # if isinstance(lhs, np.ndarray):
+            #     lhs = lhs[0, 0]
+
+            model.addConstr(lhs >= 0, name=f'cbf_{self.cbf_no_slack.name}')
 
             cnt = 0
             for name, cbf in self.cbf_slack.items():
