@@ -14,6 +14,13 @@ class World:
             if self.w.contains(p):
                 return p
 
+    def get_random_point_in_shape(self, shape):
+        minx, miny, maxx, maxy = shape.bounds
+        while True:
+            p = Point([random.uniform(minx, maxx), random.uniform(miny, maxy)])
+            if shape.contains(p):
+                return p
+
     def output_world(self):
         print(self.w.exterior.coords.xy)
         print(self.c)
@@ -24,7 +31,7 @@ class World:
         plt.plot(x, y)
         # draw charging stations
         for c in self.c:
-            plt.plot(c[0][0], c[0][1], 'ro')
+            plt.plot(c[0].x, c[0].y, 'ro')
         plt.show()
 
     def draw_polygon_with_matplotlib_with_charging_stations(self):
@@ -33,7 +40,7 @@ class World:
         plt.plot(x, y)
         # draw charging stations
         for c in self.c:
-            plt.plot(c[0][0], c[0][1], 'ro')
+            plt.plot(c[0].x, c[0].y, 'ro')
         plt.show()
 
     def nearest_charge_place(self, p: Point):
