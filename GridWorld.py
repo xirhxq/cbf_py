@@ -71,7 +71,7 @@ class GridWorld:
 
     def minus_density_in_shape(self, shape, density):
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
-        dict = []
+        dict = {'x': [], 'y': [], 'weight': []}
         for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
@@ -80,10 +80,14 @@ class GridWorld:
             for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
                 point = Point(i * self.step, j * self.step)
                 xy_index = self.get_xy_index_from_point(point)
+                pre_density = self.weights[xy_index]
                 self.weights[xy_index] -= density
-                dict.append({'x': xy_index[0], 'y': xy_index[1], 'weight': self.weights[xy_index]})
                 if self.weights[xy_index] < 0:
                     self.weights[xy_index] = 0
+                if self.weights[xy_index] != pre_density:
+                    dict['x'].append(xy_index[0])
+                    dict['y'].append(xy_index[1])
+                    dict['weight'].append(self.weights[xy_index])
         return dict
 
     def get_weighted_mean_point_in_shape(self, shape):

@@ -107,9 +107,12 @@ class Swarm:
 
     # @timer
     def update_gridworld(self):
-        self.update = []
+        self.update = {'x': [], 'y': [], 'weight': []}
         for robot in self.robots:
-            self.update.append(self.gridworld.minus_density_in_shape(robot.xy().buffer(3.0), 1.0))
+            ret = self.gridworld.minus_density_in_shape(robot.xy().buffer(3.0), 1.0)
+            self.update['x'].extend(ret['x'])
+            self.update['y'].extend(ret['y'])
+            self.update['weight'].extend(ret['weight'])
 
     def output_position(self):
         print('Time: ', self.runtime)

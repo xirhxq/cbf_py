@@ -239,8 +239,8 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
         return Z
 
     # Z = np.array(data_dict["state"][0]["grid_world"]).transpose()
-    Z = np.zeros((data_dict["para"]["grid_world"]["y_num"],
-                  data_dict["para"]["grid_world"]["x_num"]))
+    Z = np.ones((data_dict["para"]["grid_world"]["y_num"],
+                  data_dict["para"]["grid_world"]["x_num"])).astype(float)
     F = ax.imshow(Z, alpha=0.2, extent=(data_dict["para"]["grid_world"]["x_lim"][0],
                                         data_dict["para"]["grid_world"]["x_lim"][1],
                                         data_dict["para"]["grid_world"]["y_lim"][0],
@@ -301,10 +301,16 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
         # # print(grid_world_now)
         # Z = grid_world_now
         # Z = cal_dens(data_now)
-        for i in range(robot_num):
-            update_grids = data_now["update"][i]
-            for grid in update_grids:
-                Z[grid["y"], grid["x"]] = grid['weight']
+        update_grids = data_now['update']
+        for ind, weight in enumerate(update_grids['weight']):
+            xy_ind = update_grids['y'][ind], update_grids['x'][ind]
+            if Z[xy_ind] != weight and weight >= 0:
+                Z[xy_ind] = weight
+        # for i in range(robot_num):
+        #     update_grids = data_now["update"][i]
+        #     for grid in update_grids:
+        #         if Z[grid["y"], grid["x"]] != grid['weight'] and grid['weight'] >= 0:
+        #             Z[grid["y"], grid["x"]] = grid['weight']
 
         ax.imshow(Z, alpha=0.2, extent=(data_dict["para"]["grid_world"]["x_lim"][0],
                                         data_dict["para"]["grid_world"]["x_lim"][1],
