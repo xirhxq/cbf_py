@@ -612,9 +612,13 @@ def screenshot_from_video(filename):
             print(f'导出失败：{output_file}')
 
 
-def menu():
+def menu(choice=''):
     sort_data()
-    filename = find_file('04-.*')
+    if choice == '':
+        filename = find_file('04-.*')
+        # filename = find_file('.*16-34.*')
+    else:
+        filename = find_file('.*')
     ral_settings = {
         'energycbfplot': False,
         'cvtcbfplot': False,
@@ -653,7 +657,10 @@ def menu():
         print('[6]: Draw heat-maps')
         print('[7]: Draw all cvt cbf')
         print('[8]: Screenshots from video')
-        op = int(input('Input the number: '))
+        if choice == '':
+            op = int(input('Input the number: '))
+        else:
+            op = int(choice)
         # draw_map(filename)
         if op == 0:
             break
@@ -681,6 +688,8 @@ def menu():
                 draw_all_cvt_cbf(filename, **settings)
             elif op == 8:
                 screenshot_from_video(filename)
+        if choice != '':
+            break
 
 
 if __name__ == '__main__':
