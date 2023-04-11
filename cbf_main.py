@@ -98,4 +98,4 @@ if __name__ == '__main__':
 
     toc = time.time()
     print('Time cost: ', toc - tic)
-    draw.menu()
+    draw.menu(1)
