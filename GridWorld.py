@@ -72,6 +72,7 @@ class GridWorld:
     def minus_density_in_shape(self, shape, density):
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
         dict = {'x': [], 'y': [], 'weight': []}
+        shape = shape.boundary
         for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
@@ -94,6 +95,7 @@ class GridWorld:
         total_weighted_sum = np.array([0, 0]).astype(float)
         total_weight = 0
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
+        shape = shape.boundary
         for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
@@ -112,6 +114,7 @@ class GridWorld:
     def get_cvt_cost_in_shape(self, shape, point):
         res = 0
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
+        shape = shape.boundary
         for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
