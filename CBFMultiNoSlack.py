@@ -13,7 +13,7 @@ class CBFMultiNoSlack:
 
     def h(self, x, t):
         if len(self.h_dict) == 0:
-            raise Exception('h_dict is empty')
+            return 0
         # print([self.h_dict[key](x, t) for key in self.h_dict])
         return min([self.h_dict[key](x, t) for key in self.h_dict])
 
