@@ -128,10 +128,14 @@ class GridWorld:
         # set cbar from 0 to 1
         plt.show()
 
-    def output_gridworld(self):
+    def output_gridworld(self, points):
         # output gridworld directly to terminal
-        for i in range(self.y_num):
-            for j in range(self.x_num):
-                # map self.weights[j, i] to 0-9
-                print(int(self.weights[j, i] * 9), end='')
-            print('')
+        c = np.empty(self.weights.shape, dtype=str)
+        c[:] = np.where(self.weights != 0, '.', ' ')
+        for ind, p in enumerate(points):
+            xy_index = self.get_xy_index_from_point(p)
+            c[xy_index] = chr(ord('a') + ind)
+        for j in reversed(range(self.weights.shape[1])):
+            for i in range(self.weights.shape[0]):
+                print(c[i][j], end='')
+            print()

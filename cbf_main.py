@@ -62,15 +62,19 @@ if __name__ == '__main__':
         launch_json = json.load(f)
 
     swarm, cbf_options, exec_options = PreParse(launch_json)
+
     if cbf_options['energy_cbf']:
         swarm.set_energy_cbf()
     swarm.para_log()
     t_total, t_gap = exec_options['time_total'], exec_options['step_time']
     pb = draw.MyProgressBar(t_total)
     for t in np.arange(0, t_total, t_gap):
-        pb.update(t)
-        # print('Time: ', t)
-        # swarm.gridworld.output_gridworld()
+        if exec_options['output_grid'] == 'on':
+            print('Time: ', t)
+            swarm.gridworld.output_gridworld([robot.xy() for robot in swarm.robots])
+            pb.update(t, end='\n')
+        else:
+            pb.update(t)
         # for robot in swarm.robots:
         #     robot.output_state()
         if cbf_options['cvt_cbf']:
