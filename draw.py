@@ -143,7 +143,7 @@ class MyProgressBar:
         self.total = _total
         self.tic = time.time()
 
-    def update(self, _num):
+    def update(self, _num, end=''):
         progress_percentage = _num / self.total * 100
         elap_time = time.time() - self.tic
         if _num > 0:
@@ -151,12 +151,21 @@ class MyProgressBar:
         else:
             eta = np.nan
         bar_number = (math.ceil(progress_percentage) // 2)
-        print("\r\033[1;31m[%s%%]|%s| "
-              "[%.2f] elap: %.2fs eta: %.2fs\033[0m" % (math.ceil(progress_percentage),
-                                                        "█" * bar_number + " " * (50 - bar_number),
-                                                        _num, elap_time,
-                                                        eta),
-              end="")
+        if end == '':
+            print('\r', end='')
+        else:
+            print('')
+        print(f'\033'
+              f'[1;31m[{math.ceil(progress_percentage)}%]'
+              f'|{"█" * bar_number + " " * (50 - bar_number)}| '
+              f'[{_num:.2f}] '
+              f'elap: {elap_time:.2f}s eta: {eta:.2f}s\033[0m', end=end)
+        # print("\r\033[1;31m[%s%%]|%s| "
+        #       "[%.2f] elap: %.2fs eta: %.2fs\033[0m" % (math.ceil(progress_percentage),
+        #                                                 "█" * bar_number + " " * (50 - bar_number),
+        #                                                 _num, elap_time,
+        #                                                 eta),
+        #       end=end)
 
     def end(self):
         toc = time.time()
