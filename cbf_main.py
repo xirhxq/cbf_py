@@ -90,6 +90,12 @@ if __name__ == '__main__':
         # swarm.draw_position()
     pb.end()
     swarm.save_log()
+
+    with open(f'data/{swarm.log_name}_launch.json', 'w') as f:
+        json_data = json.dumps(launch_json, indent=4)
+        f.write(json_data)
+        print(f'launch saved to data/{swarm.log_name}_data.json')
+
     toc = time.time()
     print('Time cost: ', toc - tic)
     draw.menu()
