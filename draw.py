@@ -450,13 +450,13 @@ def draw_cbfs(file, usetex=False, energycbfplot=True, cvtcbfplot=True, optplot=F
     for i in range(robot_num):
         plt.subplot(211).clear()
         plt.subplot(212).clear()
-        plt.subplot(211).plot(runtime_list, [dt["robot"][i]["cvt"] for dt in data_dict["state"]], color='C0')
+        plt.subplot(211).plot(runtime_list, [dt["robot"][i]["cvt_cost"] for dt in data_dict["state"]], color='C0')
         plt.subplot(211).set_title(r'CBF Value $h_{cvt}$' + f' of UAV #{i + 1}')
         plt.subplot(211).set_xlabel('Time / s')
         plt.subplot(211).set_ylabel('$h_{cvt}$')
 
-        plt.subplot(212).plot(runtime_list, [max(dt["robot"][i]["energy"], 0) for dt in data_dict["state"]],
-                              color='C0')
+        # plt.subplot(212).plot(runtime_list, [max(dt["robot"][i]["energy"], 0) for dt in data_dict["state"]],
+        #                       color='C0')
         plt.subplot(212).plot(runtime_list, [max(dt["robot"][i]["comm"], 0) for dt in data_dict["state"]],
                               color='C1')
         plt.subplot(212).set_title(r'CBF Value $min(h_{energy}, h_{l10n})$' + f' of UAV #{i + 1}')
