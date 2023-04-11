@@ -105,6 +105,19 @@ class GridWorld:
             return Point(shape.centroid.x, shape.centroid.y)
         return Point(total_weighted_sum / total_weight)
 
+    def get_cvt_cost_in_shape(self, shape, point):
+        res = 0
+        xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
+        for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
+            y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
+            if y_line.is_empty:
+                continue
+            ydown, yup = y_line.bounds[1], y_line.bounds[3]
+            for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
+                xy_index = self.get_xy_index_from_point(Point(i * self.step, j * self.step))
+                res += self.weights[xy_index] * math.sqrt((i * self.step - point.x) ** 2 + (j * self.step - point.y) ** 2)
+        return res
+
     def draw_gridworld_with_matplotlib_with_density(self):
         plt.imshow(self.weights.T, alpha=0.2, interpolation='nearest', extent=(self.x_lim[0] * self.step,
                                                                                self.x_lim[1] * self.step,

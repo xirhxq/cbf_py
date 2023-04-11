@@ -74,6 +74,12 @@ class Swarm:
 
             robot.cbf_slack['cvt'] = CBFSlack.CBFSlack('cvt', cvt_h, alpha=lambda h: h)
 
+            def cvt_cost_h(x, t, i=index, r=robot, c=self.cells[index]):
+                xy = Point(x[r.x_ord], x[r.y_ord])
+                return -0.01 * self.gridworld.get_cvt_cost_in_shape(c, xy)
+
+            # robot.cbf_slack['cvt_cost'] = CBFSlack.CBFSlack('cvt_cost', cvt_cost_h, alpha=lambda h: h)
+
     def set_comm_cbf(self, comm_order):
         comm_dis = comm_order['distance']
         if comm_order['type'] == 'fixed':
