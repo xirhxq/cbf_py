@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from shapely.geometry import Polygon, Point, LineString
+from shapely.ops import clip_by_rect
 import matplotlib.pyplot as plt
 import time
 
@@ -50,24 +51,10 @@ class GridWorld:
     def get_bound_inside_world(self, shape):
         xmin, ymin, xmax, ymax = shape.bounds
         xmin = max(xmin, self.x_lim[0] * self.step)
-        ymin = max(ymin, self.y_lim[0] * self.step)
+        # ymin = max(ymin, self.y_lim[0] * self.step)
         xmax = min(xmax, self.x_lim[1] * self.step)
-        ymax = min(ymax, self.y_lim[1] * self.step)
+        # ymax = min(ymax, self.y_lim[1] * self.step)
         return xmin, ymin, xmax, ymax
-
-    # def minus_density_in_shape_slow(self, shape, density):
-    #     xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
-    #     dict = []
-    #     for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
-    #         for j in range(math.ceil(ymin / self.step), math.floor(ymax / self.step) + 1):
-    #             point = Point(i * self.step, j * self.step)
-    #             if shape.contains(point):
-    #                 xy_index = self.get_xy_index_from_point(point)
-    #                 self.weights[xy_index] -= density
-    #                 dict.append({'x': xy_index[0], 'y': xy_index[1], 'weight': self.weights[xy_index]})
-    #                 if self.weights[xy_index] < 0:
-    #                     self.weights[xy_index] = 0
-    #     return dict
 
     def minus_density_in_shape(self, shape, density):
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
@@ -77,7 +64,8 @@ class GridWorld:
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
                 raise ValueError("y_line is empty")
-            ydown, yup = y_line.bounds[1], y_line.bounds[3]
+            ydown, yup = max(self.y_lim[0] * self.step, y_line.bounds[1]), min(self.y_lim[1] * self.step,
+                                                                               y_line.bounds[3])
             for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
                 point = Point(i * self.step, j * self.step)
                 xy_index = self.get_xy_index_from_point(point)
@@ -100,7 +88,8 @@ class GridWorld:
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
                 continue
-            ydown, yup = y_line.bounds[1], y_line.bounds[3]
+            ydown, yup = max(self.y_lim[0] * self.step, y_line.bounds[1]), min(self.y_lim[1] * self.step,
+                                                                               y_line.bounds[3])
             for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
                 point = Point(i * self.step, j * self.step)
                 xy_index = self.get_xy_index_from_point(point)
@@ -119,10 +108,12 @@ class GridWorld:
             y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
             if y_line.is_empty:
                 continue
-            ydown, yup = y_line.bounds[1], y_line.bounds[3]
+            ydown, yup = max(self.y_lim[0] * self.step, y_line.bounds[1]), min(self.y_lim[1] * self.step,
+                                                                               y_line.bounds[3])
             for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
                 xy_index = self.get_xy_index_from_point(Point(i * self.step, j * self.step))
-                res += self.weights[xy_index] * math.sqrt((i * self.step - point.x) ** 2 + (j * self.step - point.y) ** 2)
+                res += self.weights[xy_index] * math.sqrt(
+                    (i * self.step - point.x) ** 2 + (j * self.step - point.y) ** 2)
         return res
 
     def draw_gridworld_with_matplotlib_with_density(self):
