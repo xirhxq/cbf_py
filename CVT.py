@@ -4,6 +4,7 @@ import numpy as np
 
 
 def cal_cvt(points, world):
+    n = len(points)
     points = [Point(p) for p in points]
     # points = [p for p in points if world.contains(p)]
     points = [p.coords[0] for p in points]
@@ -19,7 +20,11 @@ def cal_cvt(points, world):
         [x_left, y_mid],
         [x_right, y_mid],
         [x_mid, y_down],
-        [x_mid, y_up]
+        [x_mid, y_up],
+        [x_left, y_down],
+        [x_left, y_up],
+        [x_right, y_down],
+        [x_right, y_up],
     ]))
     vor = Voronoi(points)
     regions, vertices, point_regions = vor.regions, vor.vertices, vor.point_region
@@ -34,14 +39,14 @@ def cal_cvt(points, world):
         poly = Polygon(v)
         # poly = poly.intersection(world)
         polygons.append(poly)
-    if len(polygons) != len(points) - 4:
+    if len(polygons) != n:
         from matplotlib import pyplot as plt
 
         # plot voronoi results
         voronoi_plot_2d(vor)
         plt.show()
 
-        assert len(polygons) == len(points) - 4
+        assert len(polygons) == n
     # print('')
     # for ind in range(len(points) - 4):
     #     print(f'Original point #{ind}: ', points[ind])
