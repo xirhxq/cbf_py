@@ -302,10 +302,14 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
         # Z = grid_world_now
         # Z = cal_dens(data_now)
         update_grids = data_now['update']
-        for ind, weight in enumerate(update_grids['weight']):
-            xy_ind = update_grids['y'][ind], update_grids['x'][ind]
-            if Z[xy_ind] != weight and weight >= 0:
-                Z[xy_ind] = weight
+        x_inds = update_grids['x']
+        y_inds = update_grids['y']
+        weights = update_grids['weight']
+        Z[y_inds, x_inds] = weights
+        # for ind, weight in enumerate(update_grids['weight']):
+        #     xy_ind = update_grids['y'][ind], update_grids['x'][ind]
+        #     if Z[xy_ind] != weight and weight >= 0:
+        #         Z[xy_ind] = weight
         # for i in range(robot_num):
         #     update_grids = data_now["update"][i]
         #     for grid in update_grids:

@@ -74,9 +74,9 @@ class Swarm:
 
             robot.cbf_slack['cvt'] = CBFSlack.CBFSlack('cvt', cvt_h, alpha=lambda h: h)
 
-            def cvt_cost_h(x, t, i=index, r=robot, c=self.cells[index]):
-                xy = Point(x[r.x_ord], x[r.y_ord])
-                return -0.01 * self.gridworld.get_cvt_cost_in_shape(c, xy)
+            # def cvt_cost_h(x, t, i=index, r=robot, c=self.cells[index]):
+            #     xy = Point(x[r.x_ord], x[r.y_ord])
+            #     return -0.01 * self.gridworld.get_cvt_cost_in_shape(c, xy)
 
             # robot.cbf_slack['cvt_cost'] = CBFSlack.CBFSlack('cvt_cost', cvt_cost_h, alpha=lambda h: h)
 
@@ -91,12 +91,14 @@ class Swarm:
                     else:
                         other_index = int(other) - 1
                         other_point = self.robots[other_index].xy()
+
                     # print(f'{index + 1} {robot.xy()} to {other} @ {other_point}')
 
                     def comm_h(x, t, p=other_point, d=comm_dis, r=robot):
                         xy = Point(x[r.x_ord], x[r.y_ord])
                         k_comm = 1.0
                         return k_comm * (d - xy.distance(p))
+
                     robot.cbf_no_slack.add_h('comm', comm_h)
 
     # @timer
@@ -135,19 +137,21 @@ class Swarm:
 
     def para_log(self):
         minx, miny, maxx, maxy = self.world.w.bounds
-        para_dict = {'number': len(self.robots), 'lim': {'x': [minx, maxx], 'y': [miny, maxy]},
-                     'world': [{'x': p[0], 'y': p[1]} for p in self.world.w.exterior.coords],
-                     'charge': {
-                         'num': len(self.world.c),
-                         'pos': [{
-                             'x': p[0].x,
-                             'y': p[0].y,
-                         } for p in self.world.c],
-                         'dist': [p[1] for p in self.world.c]
-                     },
-                     'grid_world': {'x_num': self.gridworld.x_num, 'y_num': self.gridworld.y_num,
-                                    'x_lim': [l * self.gridworld.step for l in self.gridworld.x_lim],
-                                    'y_lim': [l * self.gridworld.step for l in self.gridworld.y_lim]}}
+        para_dict = {
+            'number': len(self.robots), 'lim': {'x': [minx, maxx], 'y': [miny, maxy]},
+            'world': [{'x': p[0], 'y': p[1]} for p in self.world.w.exterior.coords],
+            'charge': {
+                'num': len(self.world.c),
+                'pos': [{
+                    'x': p[0].x,
+                    'y': p[0].y,
+                } for p in self.world.c],
+                'dist': [p[1] for p in self.world.c]
+            },
+            'grid_world': {'x_num': self.gridworld.x_num, 'y_num': self.gridworld.y_num,
+                           'x_lim': [l * self.gridworld.step for l in self.gridworld.x_lim],
+                           'y_lim': [l * self.gridworld.step for l in self.gridworld.y_lim]}
+        }
         self.data['para'] = para_dict
 
     def log_once(self):

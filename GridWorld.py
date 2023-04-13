@@ -30,110 +30,84 @@ def io_decorator(func):
 class GridWorld:
     def __init__(self, shape, step: float = 0.5, density=1.0):
         self.density = density
-        self.weights = []
+        self.weights = None
         self.step = step
         self.shape = shape
 
         if isinstance(shape, Polygon):
-            xmin, ymin, xmax, ymax = shape.bounds
-            self.x_num = math.floor(xmax / step) - math.ceil(xmin / step) + 1
-            self.y_num = math.floor(ymax / step) - math.ceil(ymin / step) + 1
-            self.x_lim = (math.ceil(xmin / step), math.floor(xmax / step))
-            self.y_lim = (math.ceil(ymin / step), math.floor(ymax / step))
-            self.weights = np.ones((self.x_num, self.y_num)).astype(float) * density
+            self.xmin, self.ymin, self.xmax, self.ymax = shape.bounds
+            self.xmin = math.floor(self.xmin / step) * step
+            self.ymin = math.floor(self.ymin / step) * step
+            self.xmax = math.ceil(self.xmax / step) * step
+            self.ymax = math.ceil(self.ymax / step) * step
+            self.x_lim = (self.xmin / self.step, self.xmax / self.step)
+            self.y_lim = (self.ymin / self.step, self.ymax / self.step)
+            self.x_num = int((self.xmax - self.xmin) / step) + 1
+            self.y_num = int((self.ymax - self.ymin) / step) + 1
+            self.X, self.Y = np.meshgrid(np.arange(self.xmin, self.xmax + 0.1, step),
+                                         np.arange(self.ymin, self.ymax + 0.1, step))
+            assert self.X.shape == (self.y_num, self.x_num)
+            self.weights = np.ones_like(self.X).astype(float) * density
+
         else:
             raise ValueError("Invalid shape type")
 
-    def get_xy_index_from_point(self, point):
-        return (int(point.x / self.step) - self.x_lim[0],
-                int(point.y / self.step) - self.y_lim[0])
-
     def get_bound_inside_world(self, shape):
         xmin, ymin, xmax, ymax = shape.bounds
-        xmin = max(xmin, self.x_lim[0] * self.step)
-        # ymin = max(ymin, self.y_lim[0] * self.step)
-        xmax = min(xmax, self.x_lim[1] * self.step)
-        # ymax = min(ymax, self.y_lim[1] * self.step)
+        xmin = max(xmin, self.xmin)
+        ymin = max(ymin, self.ymin)
+        xmax = min(xmax, self.xmax)
+        ymax = min(ymax, self.ymax)
         return xmin, ymin, xmax, ymax
 
+    def is_point_in_polygon(self, d, p):
+        # p = np.vstack([p, p[0]])
+        dp = np.diff(p, axis=0)
+        exdp = dp[:, np.newaxis, :]
+        exd = d[np.newaxis, :, :]
+        dminusp = exd - p[:-1, np.newaxis, :]
+        cross = np.cross(exdp, dminusp)
+        inside = np.all(cross > 0, axis=0) | np.all(cross < 0, axis=0)
+        return inside
+
     def minus_density_in_shape(self, shape, density):
-        xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
         dict = {'x': [], 'y': [], 'weight': []}
-        shape = shape.boundary
-        for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
-            y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
-            if y_line.is_empty:
-                raise ValueError("y_line is empty")
-            ydown, yup = max(self.y_lim[0] * self.step, y_line.bounds[1]), min(self.y_lim[1] * self.step,
-                                                                               y_line.bounds[3])
-            for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
-                point = Point(i * self.step, j * self.step)
-                xy_index = self.get_xy_index_from_point(point)
-                pre_density = self.weights[xy_index]
-                self.weights[xy_index] -= density
-                if self.weights[xy_index] < 0:
-                    self.weights[xy_index] = 0
-                if self.weights[xy_index] != pre_density:
-                    dict['x'].append(xy_index[0])
-                    dict['y'].append(xy_index[1])
-                    dict['weight'].append(self.weights[xy_index])
+        xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
+        poly = np.array(shape.exterior.coords.xy).T
+        mask_bbox = (self.X >= xmin) & (self.X <= xmax) & (self.Y >= ymin) & (self.Y <= ymax)
+        points_in_bbox = np.column_stack([self.X[mask_bbox], self.Y[mask_bbox]])
+        mask_polygon = self.is_point_in_polygon(points_in_bbox, poly)
+        mask_polygon_2d = np.zeros_like(mask_bbox, dtype=bool)
+        mask_polygon_2d[mask_bbox] = mask_polygon.reshape(-1)
+        self.weights[mask_polygon_2d] -= density
+        self.weights = np.clip(self.weights, 0, 1)
+        dict['x'] = np.where(mask_polygon_2d)[1].tolist()
+        dict['y'] = np.where(mask_polygon_2d)[0].tolist()
+        dict['weight'] = self.weights[mask_polygon_2d]
         return dict
 
     def get_weighted_mean_point_in_shape(self, shape):
-        total_weighted_sum = np.array([0, 0]).astype(float)
-        total_weight = 0
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
-        shape = shape.boundary
-        for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
-            y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
-            if y_line.is_empty:
-                continue
-            ydown, yup = max(self.y_lim[0] * self.step, y_line.bounds[1]), min(self.y_lim[1] * self.step,
-                                                                               y_line.bounds[3])
-            for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
-                point = Point(i * self.step, j * self.step)
-                xy_index = self.get_xy_index_from_point(point)
-                total_weighted_sum += self.weights[xy_index] * np.array([i * self.step, j * self.step])
-                total_weight += self.weights[xy_index]
-        if total_weight == 0:
-            shape = shape.intersection(self.shape)
-            return Point(shape.centroid.x, shape.centroid.y)
-        return Point(total_weighted_sum / total_weight)
+        poly = np.array(shape.exterior.coords.xy).T
+        mask_bbox = (self.X >= xmin) & (self.X <= xmax) & (self.Y >= ymin) & (self.Y <= ymax)
+        points_in_bbox = np.column_stack([self.X[mask_bbox], self.Y[mask_bbox]])
+        mask_polygon = self.is_point_in_polygon(points_in_bbox, poly)
+        mask_polygon_2d = np.zeros_like(mask_bbox, dtype=bool)
+        mask_polygon_2d[mask_bbox] = mask_polygon.reshape(-1)
+        weights = self.weights[mask_polygon_2d]
+        if np.any(mask_polygon):
+            if np.sum(weights) == 0:
+                mean_point = np.average(points_in_bbox[mask_polygon], axis=0)
+            else:
+                mean_point = np.average(points_in_bbox[mask_polygon], axis=0, weights=weights)
+            return Point(mean_point)
+        else:
+            return Point(np.average(poly, axis=0))
 
-    def get_cvt_cost_in_shape(self, shape, point):
-        res = 0
-        xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
-        shape = shape.boundary
-        for i in range(math.ceil(xmin / self.step), math.floor(xmax / self.step) + 1):
-            y_line = shape.intersection(LineString([(i * self.step, ymin), (i * self.step, ymax)]))
-            if y_line.is_empty:
-                continue
-            ydown, yup = max(self.y_lim[0] * self.step, y_line.bounds[1]), min(self.y_lim[1] * self.step,
-                                                                               y_line.bounds[3])
-            for j in range(math.ceil(ydown / self.step), math.floor(yup / self.step) + 1):
-                xy_index = self.get_xy_index_from_point(Point(i * self.step, j * self.step))
-                res += self.weights[xy_index] * math.sqrt(
-                    (i * self.step - point.x) ** 2 + (j * self.step - point.y) ** 2)
-        return res
-
-    def draw_gridworld_with_matplotlib_with_density(self):
-        plt.imshow(self.weights.T, alpha=0.2, interpolation='nearest', extent=(self.x_lim[0] * self.step,
-                                                                               self.x_lim[1] * self.step,
-                                                                               self.y_lim[0] * self.step,
-                                                                               self.y_lim[1] * self.step),
-                   origin='lower')
-        plt.colorbar()
-        # set cbar from 0 to 1
-        plt.show()
 
     def output_gridworld(self, points):
-        # output gridworld directly to terminal
-        c = np.empty(self.weights.shape, dtype=str)
-        c[:] = np.where(self.weights != 0, '.', ' ')
-        for ind, p in enumerate(points):
-            xy_index = self.get_xy_index_from_point(p)
-            c[xy_index] = chr(ord('a') + ind)
-        for j in reversed(range(self.weights.shape[1])):
-            for i in range(self.weights.shape[0]):
-                print(c[i][j], end='')
-            print()
+        # print(self.weights)
+        output_ls = np.where(self.weights >= 0.5, '.', ' ').tolist()
+        # output output_array in lines
+
+
