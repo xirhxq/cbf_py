@@ -27,6 +27,16 @@ def io_decorator(func):
     return wrapper
 
 
+def is_point_in_polygon(d, p):
+    dp = np.diff(p, axis=0)
+    exdp = dp[:, np.newaxis, :]
+    exd = d[np.newaxis, :, :]
+    dminusp = exd - p[:-1, np.newaxis, :]
+    cross = np.cross(exdp, dminusp)
+    inside = np.all(cross > 0, axis=0) | np.all(cross < 0, axis=0)
+    return inside
+
+
 class GridWorld:
     def __init__(self, shape, step: float = 0.5, density=1.0):
         self.density = density
@@ -60,23 +70,13 @@ class GridWorld:
         ymax = min(ymax, self.ymax)
         return xmin, ymin, xmax, ymax
 
-    def is_point_in_polygon(self, d, p):
-        # p = np.vstack([p, p[0]])
-        dp = np.diff(p, axis=0)
-        exdp = dp[:, np.newaxis, :]
-        exd = d[np.newaxis, :, :]
-        dminusp = exd - p[:-1, np.newaxis, :]
-        cross = np.cross(exdp, dminusp)
-        inside = np.all(cross > 0, axis=0) | np.all(cross < 0, axis=0)
-        return inside
-
     def minus_density_in_shape(self, shape, density):
         dict = {'x': [], 'y': [], 'weight': []}
         xmin, ymin, xmax, ymax = self.get_bound_inside_world(shape)
         poly = np.array(shape.exterior.coords.xy).T
         mask_bbox = (self.X >= xmin) & (self.X <= xmax) & (self.Y >= ymin) & (self.Y <= ymax)
         points_in_bbox = np.column_stack([self.X[mask_bbox], self.Y[mask_bbox]])
-        mask_polygon = self.is_point_in_polygon(points_in_bbox, poly)
+        mask_polygon = is_point_in_polygon(points_in_bbox, poly)
         mask_polygon_2d = np.zeros_like(mask_bbox, dtype=bool)
         mask_polygon_2d[mask_bbox] = mask_polygon.reshape(-1)
         self.weights[mask_polygon_2d] -= density
@@ -91,7 +91,7 @@ class GridWorld:
         poly = np.array(shape.exterior.coords.xy).T
         mask_bbox = (self.X >= xmin) & (self.X <= xmax) & (self.Y >= ymin) & (self.Y <= ymax)
         points_in_bbox = np.column_stack([self.X[mask_bbox], self.Y[mask_bbox]])
-        mask_polygon = self.is_point_in_polygon(points_in_bbox, poly)
+        mask_polygon = is_point_in_polygon(points_in_bbox, poly)
         mask_polygon_2d = np.zeros_like(mask_bbox, dtype=bool)
         mask_polygon_2d[mask_bbox] = mask_polygon.reshape(-1)
         weights = self.weights[mask_polygon_2d]
@@ -104,10 +104,14 @@ class GridWorld:
         else:
             return Point(np.average(poly, axis=0))
 
-
     def output_gridworld(self, points):
         # print(self.weights)
-        output_ls = np.where(self.weights >= 0.5, '.', ' ').tolist()
-        # output output_array in lines
+        str_gridworld = np.where(self.weights >= 0.5, '.', ' ')
+        for point in points:
+            str_gridworld[int((point.y - self.ymin) / self.step), int((point.x - self.xmin) / self.step)] = 'o'
+        output_ls = np.flipud(str_gridworld).tolist()
+        # output output_array in line
+        for line in output_ls:
+            print(''.join(line))
 
 
