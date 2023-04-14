@@ -51,7 +51,7 @@ class Robot:
         return float(self.X[self.batt_ord])
 
     def time_forward(self, runtime, dt, world: World):
-        if world.is_charging(self.xy()) and self.X[self.batt_ord] < 100:
+        if world.is_charging(self.xy()) and self.X[self.batt_ord] < 50:
             self.X[self.batt_ord] += 10 * dt
         else:
             opt_res = np.zeros((self.U.size, 1))
