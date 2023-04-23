@@ -81,9 +81,9 @@ if __name__ == '__main__':
             swarm.set_cvt_cbf()
         if cbf_options['comm_cbf']:
             swarm.set_comm_cbf(cbf_options['comm_order'])
-        swarm.time_forward(t_gap)
         swarm.update_gridworld()
         swarm.log_once()
+        swarm.time_forward(t_gap)
         # plt.Figure()
         # swarm.gridworld.draw_gridworld_with_matplotlib_with_density()
         # swarm.draw_cvt()
