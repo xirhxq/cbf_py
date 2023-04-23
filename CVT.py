@@ -14,17 +14,17 @@ def cal_cvt(points, world):
     x_min, x_max = bbox[0]
     y_min, y_max = bbox[1]
     x_mid, y_mid = (x_min + x_max) / 2, (y_min + y_max) / 2
-    x_left, x_right = x_mid - (x_max - x_min) * 2, x_mid + (x_max - x_min) * 2
-    y_down, y_up = y_mid - (y_max - y_min) * 2, y_mid + (y_max - y_min) * 2
+    x_left, x_right = x_mid - (x_max - x_min) * 4, x_mid + (x_max - x_min) * 4
+    y_down, y_up = y_mid - (y_max - y_min) * 4, y_mid + (y_max - y_min) * 4
     points = np.concatenate((points, [
         [x_left, y_mid],
         [x_right, y_mid],
         [x_mid, y_down],
         [x_mid, y_up],
-        [x_left, y_down],
-        [x_left, y_up],
-        [x_right, y_down],
-        [x_right, y_up],
+        # [x_left, y_down],
+        # [x_left, y_up],
+        # [x_right, y_down],
+        # [x_right, y_up],
     ]))
     vor = Voronoi(points)
     regions, vertices, point_regions = vor.regions, vor.vertices, vor.point_region
