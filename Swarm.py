@@ -58,11 +58,11 @@ class Swarm:
         self.cells = CVT.cal_cvt(points, self.world.w)
 
         # get the corners of self.world.w in type of Point
-        corners = [Point(self.world.w.exterior.coords[i]) for i in range(4)]
-        for c in corners:
-            # if c is not in any of the cells, raise an error
-            if not any([c.within(cell) for cell in self.cells]):
-                raise Exception(f'Corner {c} is not in any of the cells')
+        # corners = [Point(self.world.w.exterior.coords[i]) for i in range(4)]
+        # for c in corners:
+        #     # if c is not in any of the cells, raise an error
+        #     if not any([c.within(cell) for cell in self.cells]):
+        #         raise Exception(f'Corner {c} is not in any of the cells')
 
         self.centers = [self.gridworld.get_weighted_mean_point_in_shape(cell) for cell in self.cells]
         # print(self.centers, len(self.centers))

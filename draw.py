@@ -366,7 +366,7 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
 
         if bigtimetext:
             ax.set_title(r'$\mathrm{Time}$' + f' $=$ ${data_now["runtime"]:.2f}$' + r'$\mathrm{s}$', fontsize=25,
-                         y=0.95)
+                         y=1.00)
             # ax.text(0.38, 0.95, r'$\mathrm{Time}$' + f' $=$ ${data_now["runtime"]:.2f}$' + r'$\mathrm{s}$', transform=ax.transAxes, fontsize=40)
         else:
             ax.text(0.05, 0.95, 'Time = {:.2f}s'.format(data_now["runtime"]), transform=ax.transAxes)
@@ -648,9 +648,9 @@ def menu(choice=''):
         'show_camera': False,
         'show_cvt': True,
         'show_bar': False,
-        'show_axis': False,
+        'show_axis': True,
         'figsize': (8, 8),
-        'shot_list': [0, 10, 25, 80, 140, 220, 275]
+        'shot_list': [0, 1, 2, 5, 10, 20, 25]
     }
     main_settings = {
         'energycbfplot': False,
@@ -665,7 +665,7 @@ def menu(choice=''):
         'figsize': (7, 7),
         'shot_list': []
     }
-    settings = main_settings
+    settings = ral_settings
     while True:
         print('-' * 10 + 'Choose which drawing you want:' + '-' * 10)
         print('[0]: Quit')

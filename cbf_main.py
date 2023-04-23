@@ -59,7 +59,7 @@ if __name__ == '__main__':
     tic = time.time()
 
     # parse launch_json from 'cbf_main.json' in /launch
-    with open('launch/cbf_main.json', 'r') as f:
+    with open('launch/indoor_search.json', 'r') as f:
         launch_json = json.load(f)
 
     swarm, cbf_options, exec_options = PreParse(launch_json)

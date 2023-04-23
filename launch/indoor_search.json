@@ -1,23 +1,32 @@
 {
   "world": [
-    {"x": -15, "y": 0},
-    {"x": 15, "y": 0},
-    {"x": -15, "y": 30},
-    {"x": 15, "y": 30}
+    {"x": -5, "y": 0},
+    {"x": 5, "y": 0},
+    {"x": -5, "y": 20},
+    {"x": 5, "y": 20}
   ],
   "charge": [
-    {"x": 5, "y": 0},
-    {"x": -5, "y": 0}
+    {"x": -3.5, "y": 0},
+    {"x": 3.5, "y": 0},
+    {"x": 0, "y": 0}
   ],
   "swarm": {
     "num": 3,
     "//initial_position": ["specified", "random_in_poly", "random_all"],
-    "initial_position": "random_all",
+    "initial_position": "specified",
     "specified_pos": [
-      {"x": 0, "y": 3},
-      {"x": -3, "y": 3},
-      {"x": -3, "y": 6}
-    ]
+      {"x": -4, "y": 3},
+      {"x": 4, "y": 3},
+      {"x": -1, "y": 3}
+    ],
+    "base": {
+      "num": 3,
+      "pos": [
+        {"x": -5, "y": 0},
+        {"x": 5, "y": 0},
+        {"x": 0, "y": 0}
+      ]
+    }
   },
   "cbfs": {
     "energy_cbf": "on",
@@ -27,9 +36,9 @@
     "comm_order": {
       "//type": ["fixed", "dynamic"],
       "type": "fixed",
-      "distance": 8.5,
-      "1": ["b1", "b2"],
-      "2": ["1", "b2"],
+      "distance": 6,
+      "1": ["b1", "b3"],
+      "2": ["b2", "b3"],
       "3": ["1", "2"]
     },
     "camera_cbf": "off"

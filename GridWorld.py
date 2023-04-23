@@ -38,7 +38,7 @@ def is_point_in_polygon(d, p):
 
 
 class GridWorld:
-    def __init__(self, shape, step: float = 0.5, density=1.0):
+    def __init__(self, shape, step: float = 0.1, density=1.0):
         self.density = density
         self.weights = None
         self.step = step
