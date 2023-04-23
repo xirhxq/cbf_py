@@ -344,8 +344,6 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
                             for j in range(data_now["cvt"][i]["num"])] for i in range(robot_num)]
             poly_center_list = [data_now["cvt"][i]["center"] for i in range(robot_num)]
 
-        ax.plot(pos_x_list, pos_y_list, 'b*')
-
         for i in range(robot_num):
             if show_camera:
                 ax.add_patch(Wedge(center=[pos_x_list[i], pos_y_list[i]], r=0.5, alpha=0.3,
@@ -363,6 +361,8 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
             if "cvt" in data_now and show_cvt:
                 ax.plot(poly_x_list[i], poly_y_list[i], 'k')
                 ax.plot([ct["x"] for ct in poly_center_list], [ct["y"] for ct in poly_center_list], '*', color='lime')
+
+        ax.plot(pos_x_list, pos_y_list, 'b*')
 
         if bigtimetext:
             ax.set_title(r'$\mathrm{Time}$' + f' $=$ ${data_now["runtime"]:.2f}$' + r'$\mathrm{s}$', fontsize=25,
