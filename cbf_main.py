@@ -21,7 +21,8 @@ def PreParse(launch_json):
         ).convex_hull,
         [Point(p['x'], p['y']) for p in launch_json['charge']]
     )
-    swarm = Swarm.Swarm(launch_json['swarm']['num'], world)
+    bases = [Point(p['x'], p['y']) for p in launch_json['swarm']['base']['pos']]
+    swarm = Swarm.Swarm(launch_json['swarm']['num'], world, bases)
     if launch_json['swarm']['initial_position'] == 'random_all':
         swarm.random_initial_position_in_shape(world.w)
     elif launch_json['swarm']['initial_position'] == 'random_in_poly':

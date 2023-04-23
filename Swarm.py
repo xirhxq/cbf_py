@@ -18,7 +18,7 @@ def timer(func):
 
 
 class Swarm:
-    def __init__(self, n, world: World):
+    def __init__(self, n, world: World, bases):
         self.update = None
         self.centers = None
         self.cells = None
@@ -32,6 +32,7 @@ class Swarm:
         self.runtime = 0.0
         self.data = {'state': []}
         self.log_name = time.strftime("%m-%d_%H-%M", time.localtime())
+        self.bases = bases
 
     def random_initial_position_in_shape(self, shape):
         for robot in self.robots:
@@ -87,7 +88,9 @@ class Swarm:
                 for other in comm_order[str(index + 1)]:
                     if other[0] == 'b':
                         base_index = int(other[1:]) - 1
-                        other_point = self.world.c[base_index][0]
+                        assert base_index < len(self.bases)
+                        other_point = self.bases[base_index]
+                        # other_point = self.world.c[base_index][0]
                     else:
                         other_index = int(other) - 1
                         other_point = self.robots[other_index].xy()
