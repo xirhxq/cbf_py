@@ -50,6 +50,9 @@ class Robot:
     def batt(self):
         return float(self.X[self.batt_ord])
 
+    def camera(self):
+        return float(self.X[self.camera_ord])
+
     def time_forward(self, runtime, dt, world: World):
         if world.is_charging(self.xy()) and self.X[self.batt_ord] < 50:
             self.X[self.batt_ord] += 10 * dt
@@ -86,6 +89,9 @@ class Robot:
                 constraint_const = cbf.constraint_const_without_time(self.F, self.G, self.X, runtime)
                 # print(f'cbf_slack_{name}: ', u_coe, constraint_const)
                 # print(f'cbf_slack_{name} expr: ', u_coe.dot(var_v) + var_slack[cnt] + constraint_const)
+                # print(f'u_coe.dot(var_v): ', u_coe.dot(var_v))
+                # print(f'var_slack[cnt]: ', var_slack[cnt])
+                # print(f'constraint_const: ', constraint_const)
                 model.addConstr(u_coe.dot(var_v) + var_slack[cnt] + constraint_const >= 0, name=f'cbf_slack_{name}')
                 cnt += 1
 

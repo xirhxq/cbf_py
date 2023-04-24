@@ -1,4 +1,4 @@
-from math import log, pi
+from math import log, pi, atan2
 from shapely.geometry import Point, Polygon
 import time
 import numpy as np
@@ -22,11 +22,13 @@ class Swarm:
         self.update = None
         self.centers = None
         self.cells = None
-        self.robots = [Robot.Robot(3, 2) for _ in range(n)]
+        self.robots = [Robot.Robot(4, 3) for _ in range(n)]
         for robot in self.robots:
             robot.F[2] = -1
             # x[2] = random 10 to 20
             robot.X[2] = 10 + 10 * np.random.random()
+            robot.G[3, 2] = 1
+            robot.X[3] = pi / 2
         self.world = world
         self.gridworld = GridWorld.GridWorld(world.w)
         self.runtime = 0.0
@@ -83,6 +85,19 @@ class Swarm:
                 return -k_cvt * xy.distance(c)
 
             robot.cbf_slack['cvt'] = CBFSlack.CBFSlack('cvt', cvt_h, alpha=lambda h: h)
+
+            def aim_h(x, t, i=index, r=robot, c=self.centers[index]):
+                xy = Point(x[r.x_ord], x[r.y_ord])
+                k_camera = 5
+                angle_to_c = atan2(c.y - xy.y, c.x - xy.x)
+                my_camera = x[r.camera_ord]
+                angle_diff = (my_camera - angle_to_c + 2 * pi) % (2 * pi)
+                angle_diff = float(min(angle_diff, 2 * pi - angle_diff))
+                # print(f'Robot #{i} with angle {float(my_camera):.2f} Angle to Center: {angle_to_c:.2f} Angle Diff: {angle_diff:.2f}')
+                # print(f'aim value {-k_camera * angle_diff}')
+                return -k_camera * angle_diff
+
+            robot.cbf_slack['aim'] = CBFSlack.CBFSlack('aim', aim_h)
 
             # def cvt_cost_h(x, t, i=index, r=robot, c=self.cells[index]):
             #     xy = Point(x[r.x_ord], x[r.y_ord])
@@ -175,7 +190,7 @@ class Swarm:
                               'batt': r.batt(),
                               **{cbf.name: float(cbf.h(r.X, self.runtime)) for cbf in r.cbf_slack.values()},
                               **{name: float(h(r.X, self.runtime)) for name, h in r.cbf_no_slack.h_dict.items()},
-                              'camera': pi
+                              'camera': r.camera()
                           }
                           for r in self.robots
                       ],

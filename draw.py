@@ -346,7 +346,7 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
 
         for i in range(robot_num):
             if show_camera:
-                ax.add_patch(Wedge(center=[pos_x_list[i], pos_y_list[i]], r=0.5, alpha=0.3,
+                ax.add_patch(Wedge(center=[pos_x_list[i], pos_y_list[i]], r=2, alpha=0.3,
                                    theta1=camera_list[i] - 15, theta2=camera_list[i] + 15))
 
             if robot_anno:
@@ -355,7 +355,10 @@ def draw_map(file, usetex=False, robot_anno=True, energycbfplot=True, cvtcbfplot
                 #              + rf'$\quad\theta = {camera_list[i]:.2f}$'
                 #              ),
                 #             xy=(pos_x_list[i], pos_y_list[i]))
-                ax.annotate(f'    #{i + 1}' + '\n' + f'  E: {batt_list[i]:.2f} ', xy=(pos_x_list[i], pos_y_list[i]),
+                ax.annotate(f'    #{i + 1}' + '\n'
+                            + f'  E: {batt_list[i]:.2f} ' + '\n'
+                            + f'Theta: {camera_list[i]:.2f}',
+                            xy=(pos_x_list[i], pos_y_list[i]),
                             fontsize=8)
 
             if "cvt" in data_now and show_cvt:
@@ -470,7 +473,7 @@ def draw_cbfs(file, usetex=False, energycbfplot=True, cvtcbfplot=True, optplot=F
     for i in range(robot_num):
         plt.subplot(211).clear()
         plt.subplot(212).clear()
-        plt.subplot(211).plot(runtime_list, [dt["robot"][i]["cvt_cost"] for dt in data_dict["state"]], color='C0')
+        plt.subplot(211).plot(runtime_list, [dt["robot"][i]["aim"] for dt in data_dict["state"]], color='C0')
         plt.subplot(211).set_title(r'CBF Value $h_{cvt}$' + f' of UAV #{i + 1}')
         plt.subplot(211).set_xlabel('Time / s')
         plt.subplot(211).set_ylabel('$h_{cvt}$')
@@ -658,14 +661,14 @@ def menu(choice=''):
         'robot_anno': True,
         # 'usetex': True,
         'bigtimetext': False,
-        'show_camera': False,
+        'show_camera': True,
         'show_cvt': True,
         'show_bar': True,
         'show_axis': False,
         'figsize': (7, 7),
         'shot_list': []
     }
-    settings = ral_settings
+    settings = main_settings
     while True:
         print('-' * 10 + 'Choose which drawing you want:' + '-' * 10)
         print('[0]: Quit')
