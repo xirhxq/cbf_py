@@ -462,32 +462,35 @@ def draw_cbfs(file, usetex=False, energycbfplot=True, cvtcbfplot=True, optplot=F
 
     matplotlib.use('agg')
 
-    plt.figure(figsize=figsize)
-
     robot_num = data_dict["para"]["number"]
-
     runtime_list = [dt["runtime"] for dt in data_dict["state"]]
 
+    cbf_labels = [key for key in data_dict['state'][0]['robot'][0].keys() if 'cbf' in key]
+    print(f'Found {len(cbf_labels)} cbf labels:')
+    for index, cbf_label in enumerate(cbf_labels):
+        print(f'[{index}]: ' + cbf_label)
+    op = input('Please choose the cbfs you want to draw: ')
+    choosed_labels = [label for ind, label in enumerate(cbf_labels) if str(ind) in op]
+    num_labels = len(choosed_labels)
+    all_label = '_'.join(['_'.join(label.split('_')[:-2]) for label in choosed_labels])
     pb = MyProgressBar(robot_num)
 
-    for i in range(robot_num):
-        plt.subplot(211).clear()
-        plt.subplot(212).clear()
-        plt.subplot(211).plot(runtime_list, [dt["robot"][i]["aim"] for dt in data_dict["state"]], color='C0')
-        plt.subplot(211).set_title(r'CBF Value $h_{cvt}$' + f' of UAV #{i + 1}')
-        plt.subplot(211).set_xlabel('Time / s')
-        plt.subplot(211).set_ylabel('$h_{cvt}$')
+    figsize = (8, 2 * num_labels)
+    print(f'Setting figsize as {figsize}')
+    plt.figure(figsize=figsize)
 
-        # plt.subplot(212).plot(runtime_list, [max(dt["robot"][i]["energy"], 0) for dt in data_dict["state"]],
-        #                       color='C0')
-        plt.subplot(212).plot(runtime_list, [max(dt["robot"][i]["comm"], 0) for dt in data_dict["state"]],
-                              color='C1')
-        plt.subplot(212).set_title(r'CBF Value $min(h_{energy}, h_{l10n})$' + f' of UAV #{i + 1}')
-        plt.subplot(212).set_xlabel('Time / s')
-        plt.subplot(212).set_ylabel('$min(h_{energy}, h_{l10n})$')
+    for i in range(robot_num):
+        for ind, label in enumerate(choosed_labels):
+            split_label = '_'.join(label.split('_')[:-2])
+            ax = plt.subplot(num_labels, 1, ind + 1)
+            ax.clear()
+            ax.plot(runtime_list, [dt["robot"][i][label] for dt in data_dict["state"]], color='C' + str(ind))
+            ax.set_title(r'CBF Value $h_{' + split_label + '}$' + f' of UAV #{i + 1}')
+            ax.set_xlabel('Time / s')
+            ax.set_ylabel('$h_{' + split_label + '}$')
         plt.subplots_adjust(hspace=0.7)
         # leg = ax.legend()
-        plot_file_name = file[:-1] + f'/{i + 1}_cbfs.png'
+        plot_file_name = file[:-1] + f'/{i + 1}_cbf_{all_label}.png'
         plt.savefig(plot_file_name, bbox_inches='tight')
         pb.update(i + 1)
 

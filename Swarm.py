@@ -188,8 +188,8 @@ class Swarm:
                               'x': r.xy().x,
                               'y': r.xy().y,
                               'batt': r.batt(),
-                              **{cbf.name: float(cbf.h(r.X, self.runtime)) for cbf in r.cbf_slack.values()},
-                              **{name: float(h(r.X, self.runtime)) for name, h in r.cbf_no_slack.h_dict.items()},
+                              **{cbf.name + '_cbf_s': float(cbf.h(r.X, self.runtime)) for cbf in r.cbf_slack.values()},
+                              **{name + '_cbf_ns': float(h(r.X, self.runtime)) for name, h in r.cbf_no_slack.h_dict.items()},
                               'camera': r.camera()
                           }
                           for r in self.robots
